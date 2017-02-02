@@ -1,0 +1,10 @@
+{
+  "formElements": [
+    {
+      "id": "dayDescription",
+      "type": "textarea",
+      "default": "Tell me how the day went...",
+      "title": "Day Description"
+    }
+  ]
+}

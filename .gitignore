@@ -87,3 +87,10 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# IntelliJ config
+.idea
+
+# Journal Ignore
+journal/node_modules
+*.css
