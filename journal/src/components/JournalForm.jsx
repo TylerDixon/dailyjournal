@@ -1,6 +1,10 @@
 import React, {Component} from 'react';
 import config from '../../config.json'
 import TextArea from './TextArea';
+import Text from './Text';
+import Number from './Number';
+import Range from './Range';
+import Choices from './Choices';
 
 
 class JournalForm extends Component {
@@ -36,10 +40,8 @@ class JournalForm extends Component {
     }
 
     render() {
-        var formElementsToRender = [];
-
         // Render each form value according to it's configuration
-        config.formElements.forEach((formElement) => {
+        var formElementsToRender = config.formElements.map((formElement) => {
             var elementToAdd;
             switch (formElement.type) {
                 case 'textarea':
@@ -47,14 +49,33 @@ class JournalForm extends Component {
                                              onChange={this.handleElementChange.bind(this)}
                                              elementConfig={formElement}></TextArea>;
                     break;
+                case 'text':
+                    elementToAdd = <Text value={this.state.formValues[formElement.id]}
+                                         onChange={this.handleElementChange.bind(this)}
+                                         elementConfig={formElement}></Text>;
+                    break;
+                case 'number':
+                    elementToAdd = <Number value={this.state.formValues[formElement.id]}
+                                           onChange={this.handleElementChange.bind(this)}
+                                           elementConfig={formElement}></Number>;
+                    break;
+                case 'range':
+                    elementToAdd = <Range value={this.state.formValues[formElement.id]}
+                                          onChange={this.handleElementChange.bind(this)}
+                                          elementConfig={formElement}></Range>;
+                    break;
+                case 'checkbox':
+                case 'radio':
+                    elementToAdd = <Choices value={this.state.formValues[formElement.id]}
+                                            onChange={this.handleElementChange.bind(this)}
+                                            elementConfig={formElement}></Choices>;
+                    break;
             }
 
-            formElementsToRender.push(
-                <div className="form-element-container">
+            return <div className="form-element-container">
                     <h2>{formElement.title}</h2>
                     {elementToAdd}
                 </div>
-            );
         });
         return (
             <form onSubmit={this.submit.bind(this)}>

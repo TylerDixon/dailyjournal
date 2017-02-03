@@ -5,6 +5,42 @@
       "type": "textarea",
       "default": "Tell me how the day went...",
       "title": "Day Description"
+    },
+    {
+      "id": "testText",
+      "type": "text",
+      "default": "Text goes here...",
+      "title": "Test Text"
+    },
+    {
+      "id": "testCheckboxes",
+      "type": "checkbox",
+      "default": ["test1", "test2"],
+      "choices": ["test1", "test2", "test3"],
+      "title": "Test Checkboxes"
+    },
+    {
+      "id": "testRadio",
+      "type": "radio",
+      "default": "test1",
+      "choices": ["test1", "test2", "test3"],
+      "title": "Test Radios"
+    },
+    {
+      "id": "testRange",
+      "type": "range",
+      "default": 10,
+      "min": 0,
+      "max": 20,
+      "title": "Test Range"
+    },
+    {
+      "id": "testNumber",
+      "type": "number",
+      "default": 10,
+      "min": 0,
+      "max": 20,
+      "title": "Test Number"
     }
   ]
 }
