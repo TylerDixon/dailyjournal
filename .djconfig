@@ -1,0 +1,5 @@
+{
+  "lambda_function_prefix": "daily_journal",
+  "s3_bucket_name": "dj-2017",
+  "api_gateway_identifier": "dj-2017"
+}
