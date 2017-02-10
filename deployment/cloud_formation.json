@@ -1,0 +1,341 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Metadata": {
+    "AWS::CloudFormation::Designer": {
+      "a347c35f-5998-4371-9862-8a786f951eed": {
+        "size": {
+          "width": 450,
+          "height": 320
+        },
+        "position": {
+          "x": 380,
+          "y": 40
+        },
+        "z": 0,
+        "embeds": [
+          "59a9f30f-6448-465c-ba58-e9fa9d840734",
+          "16d03c17-f664-4a3b-8ac9-c4c58dc5ea74"
+        ]
+      },
+      "59a9f30f-6448-465c-ba58-e9fa9d840734": {
+        "size": {
+          "width": 140,
+          "height": 140
+        },
+        "position": {
+          "x": 410,
+          "y": 130
+        },
+        "z": 1,
+        "parent": "a347c35f-5998-4371-9862-8a786f951eed",
+        "embeds": [],
+        "isassociatedwith": [
+          "a347c35f-5998-4371-9862-8a786f951eed"
+        ],
+        "dependson": [
+          "a347c35f-5998-4371-9862-8a786f951eed",
+          "fa8420ee-ce3f-4169-8bb1-6e4d1ba87a36"
+        ]
+      },
+      "3da898f6-3803-4e5f-9fe8-9c2123272ed4": {
+        "source": {
+          "id": "59a9f30f-6448-465c-ba58-e9fa9d840734"
+        },
+        "target": {
+          "id": "a347c35f-5998-4371-9862-8a786f951eed"
+        },
+        "z": 2
+      },
+      "a3479b67-0b10-4444-b2f5-d8f8a1517e33": {
+        "source": {
+          "id": "1148cf40-cc67-4e2b-84b9-bd566da82dd4"
+        },
+        "target": {
+          "id": "59a9f30f-6448-465c-ba58-e9fa9d840734"
+        },
+        "z": 3
+      },
+      "fa8420ee-ce3f-4169-8bb1-6e4d1ba87a36": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 80,
+          "y": 90
+        },
+        "z": 0,
+        "embeds": [],
+        "dependson": [
+          "e6110134-cb2a-4478-973c-1c113bde230a",
+          "5c784909-ab3a-4dfa-90ec-8b1d6fac1a80"
+        ]
+      },
+      "03f421cb-3fe6-49d4-9cca-1b613190e82d": {
+        "source": {
+          "id": "59a9f30f-6448-465c-ba58-e9fa9d840734"
+        },
+        "target": {
+          "id": "fa8420ee-ce3f-4169-8bb1-6e4d1ba87a36"
+        },
+        "z": 4
+      },
+      "5c784909-ab3a-4dfa-90ec-8b1d6fac1a80": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 80,
+          "y": 230
+        },
+        "z": 0,
+        "embeds": [],
+        "dependson": [
+          "e6110134-cb2a-4478-973c-1c113bde230a"
+        ]
+      },
+      "e6110134-cb2a-4478-973c-1c113bde230a": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 180,
+          "y": 230
+        },
+        "z": 0,
+        "embeds": []
+      },
+      "7ebaa032-7b3e-4753-a190-556b37c83dd7": {
+        "source": {
+          "id": "5c784909-ab3a-4dfa-90ec-8b1d6fac1a80"
+        },
+        "target": {
+          "id": "e6110134-cb2a-4478-973c-1c113bde230a"
+        },
+        "z": 2
+      },
+      "3da06382-3bcc-48fa-8954-7a4e4726ffc2": {
+        "source": {
+          "id": "fa8420ee-ce3f-4169-8bb1-6e4d1ba87a36"
+        },
+        "target": {
+          "id": "e6110134-cb2a-4478-973c-1c113bde230a"
+        },
+        "z": 3
+      },
+      "251e8ef0-4b49-4aa2-a10a-febe71a6e967": {
+        "source": {
+          "id": "fa8420ee-ce3f-4169-8bb1-6e4d1ba87a36"
+        },
+        "target": {
+          "id": "5c784909-ab3a-4dfa-90ec-8b1d6fac1a80"
+        },
+        "z": 4
+      },
+      "16d03c17-f664-4a3b-8ac9-c4c58dc5ea74": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 620,
+          "y": 170
+        },
+        "z": 1,
+        "parent": "a347c35f-5998-4371-9862-8a786f951eed",
+        "embeds": [],
+        "dependson": [
+          "59a9f30f-6448-465c-ba58-e9fa9d840734",
+          "fa8420ee-ce3f-4169-8bb1-6e4d1ba87a36"
+        ],
+        "isrelatedto": [
+          "fa8420ee-ce3f-4169-8bb1-6e4d1ba87a36"
+        ]
+      },
+      "16b13919-6c04-4acc-b658-a67e37ba1494": {
+        "source": {
+          "id": "16d03c17-f664-4a3b-8ac9-c4c58dc5ea74"
+        },
+        "target": {
+          "id": "59a9f30f-6448-465c-ba58-e9fa9d840734"
+        },
+        "z": 11
+      },
+      "a4e3945d-9939-4ca1-a5b8-e3219ba31451": {
+        "source": {
+          "id": "16d03c17-f664-4a3b-8ac9-c4c58dc5ea74"
+        },
+        "target": {
+          "id": "fa8420ee-ce3f-4169-8bb1-6e4d1ba87a36"
+        },
+        "z": 11
+      }
+    }
+  },
+  "Resources": {
+    "AGRAPXM1": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "dj_cf"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "a347c35f-5998-4371-9862-8a786f951eed"
+        }
+      }
+    },
+    "AGR2MXEE": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "AGRAPXM1"
+        },
+        "ParentId": {
+          "Fn::GetAtt": [
+            "AGRAPXM1",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "entries"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "59a9f30f-6448-465c-ba58-e9fa9d840734"
+        }
+      },
+      "DependsOn": [
+        "AGRAPXM1",
+        "LF3UP54"
+      ]
+    },
+    "LF3UP54": {
+      "Type": "AWS::Lambda::Function",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "fa8420ee-ce3f-4169-8bb1-6e4d1ba87a36"
+        }
+      },
+      "Properties": {
+        "Code": {
+          "S3Bucket": "dj_store_handler",
+          "S3Key": "store_handler.zip"
+        },
+        "Description": "Function generated to store daily journal entries",
+        "FunctionName": "dj_store_handler",
+        "Handler": "store_handler.handler",
+        "MemorySize": 128,
+        "Runtime": "python2.7",
+        "Role": {
+          "Fn::GetAtt": [
+            "IAMR36YI3",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "S3B2LZN0",
+        "IAMR36YI3"
+      ]
+    },
+    "IAMR36YI3": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "dj_cf_role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": "arn:aws:logs:*:*:*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "s3:PutObject",
+                  "s3:GetObject",
+                  "s3:DeleteObject"
+                ],
+                "Resource": [
+                  "arn:aws:s3:::dj-placeholder/entries/*"
+                ]
+              }
+            ]
+          },
+            "PolicyName": "dj_cf"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "5c784909-ab3a-4dfa-90ec-8b1d6fac1a80"
+        }
+      },
+      "DependsOn": [
+        "S3B2LZN0"
+      ]
+    },
+    "S3B2LZN0": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "dj-placeholder"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "e6110134-cb2a-4478-973c-1c113bde230a"
+        }
+      }
+    },
+    "AGMHR6V": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "AGRAPXM1"
+        },
+        "HttpMethod": "POST",
+        "AuthorizationType": "None",
+        "ResourceId": "AGR2MXEE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS",
+          "Uri": {
+            "Fn::GetAtt": [
+              "LF3UP54",
+              "Arn"
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "16d03c17-f664-4a3b-8ac9-c4c58dc5ea74"
+        }
+      },
+      "DependsOn": [
+        "AGR2MXEE",
+        "LF3UP54"
+      ]
+    }
+  }
+}
