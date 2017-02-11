@@ -13,4 +13,4 @@ def archive_function(zip_dir, func_name):
     function_zip.write(os.path.join('lambda_handlers', func_name + '.py'), func_name + '.py')
     function_zip.close()
 
-    return open(archive_loc)
+    return archive_loc
