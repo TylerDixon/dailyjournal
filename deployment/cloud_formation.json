@@ -7,6 +7,19 @@
         "Name": "dj_cf"
       }
     },
+    "DjDeployment": {
+      "Type" : "AWS::ApiGateway::Deployment",
+      "Properties" : {
+        "RestApiId" : {
+          "Ref": "DjRestApi"
+        },
+        "StageName" : "dev"
+      },
+      "DependsOn": [
+        "StoreEntryMethod",
+        "DjRestApi"
+      ]
+    },
     "EntriesResource": {
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
