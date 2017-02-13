@@ -125,7 +125,10 @@
     "EntryBuckets": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": "dj-placeholder"
+        "AccessControl": "PublicRead",
+        "WebsiteConfiguration": {
+          "IndexDocument": "index.html"
+        }
       }
     },
     "StoreEntryMethod": {
@@ -167,6 +170,74 @@
         "EntriesResource",
         "StoreLambda"
       ]
+    },
+    "OptionsMethod": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "RestApiId": {
+          "Ref": "DjRestApi"
+        },
+        "ResourceId": {
+          "Ref": "EntriesResource"
+        },
+        "HttpMethod": "OPTIONS",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "StatusCode": 200,
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Methods": "'POST,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_MATCH",
+          "RequestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "StatusCode": 200,
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": false,
+              "method.response.header.Access-Control-Allow-Methods": false,
+              "method.response.header.Access-Control-Allow-Origin": false
+            }
+          }
+        ]
+      }
+    },
+    "ReminderSNS": {
+      "Type" : "AWS::SNS::Topic",
+      "Properties" : {
+        "DisplayName" : "Daily Journal Reminder SNS",
+        "Subscription" : [],
+        "TopicName" : "DJReminderSNS"
+      }
+    },
+    "NotificationRule": {
+      "Type" : "AWS::Events::Rule",
+      "Properties" : {
+        "Description" : "Reminder Event for Daily Journal",
+        "Name" : "DJReminderRule",
+        "ScheduleExpression" : "cron(54 2 * * ? *)",
+        "Targets" : [
+          {
+            "Arn": { "Ref": "ReminderSNS" },
+            "Id": "DJReminderSNS"
+          }
+        ]
+      }
     }
   }
 }

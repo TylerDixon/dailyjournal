@@ -7,9 +7,10 @@
     "react-scripts": "0.8.5"
   },
   "dependencies": {
-    "es6-request": "^2.1.3",
     "react": "^15.4.2",
-    "react-dom": "^15.4.2"
+    "react-dom": "^15.4.2",
+    "request": "^2.79.0",
+    "request-promise": "^4.1.1"
   },
   "scripts": {
     "start": "npm run watch-scss & react-scripts start",

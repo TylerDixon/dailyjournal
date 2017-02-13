@@ -6,12 +6,12 @@ import json
 
 @click.command()
 @click.option('--config', default='./.djconfig', help='Path to configuration file.')
-def deploy(config):
+@click.option('--debug_npm', default=False, help='Show the npm output')
+def deploy(config, debug_npm):
     try:
         with open(config) as data_file:
             data = json.load(data_file)
-            print data
-            deployment.deploy_stack(data)
+            deployment.deploy_stack(data, debug_npm)
     except IOError as err:
         print 'Failed to open configuration file at ' + config
         print err
