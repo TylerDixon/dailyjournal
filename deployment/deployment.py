@@ -12,17 +12,23 @@ from multiprocessing import Pool
 
 def deploy_stack(config, debug_npm):
     # TODO: Move to using configuration/schema validation library?
-    access_key_id = config['aws_access_key_id'] if 'aws_access_key_id' in config else os.environ.get(
-        'AWS_ACCESS_KEY_ID')
+    try:
+        access_key_id = config['aws_access_key_id']
+    except KeyError:
+        access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
     if access_key_id == None:
         print 'No access key id found in config/environment variable, will be defaulting to what you find here: http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials'
 
-    secret_access_key = config['aws_secret_access_key'] if 'aws_secret_access_key' in config else os.environ.get(
-        'AWS_SECRET_ACCESS_KEY')
+    try:
+     secret_access_key = config['aws_secret_access_key']
+    except KeyError:
+        os.environ.get('AWS_SECRET_ACCESS_KEY')
     if secret_access_key == None:
         print 'No secret access key found in config/environment variable, will be defaulting to what you find here: http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials'
-
-    region = config['aws_region'] if 'aws_region' in config else os.environ.get('AWS_REGION')
+    try:
+        region = config['aws_region']
+    except KeyError:
+        os.environ.get('AWS_REGION')
     if region == None:
         print 'No region found in config/environment variable, will be defaulting to what you find here: http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials'
 
@@ -41,10 +47,21 @@ def deploy_stack(config, debug_npm):
     # Surround operations with a try, so buckets can always be cleaned up after the fact.
     try:
         print 'Uploading functions'
-        upload_lambda_functions(deployment_bucket, 'store_handler')
+        try:
+            lambda_function_prefix = config['lambda_function_prefix']
+        except KeyError:
+            lambda_function_prefix = 'daily_journal_'
+        upload_lambda_functions(deployment_bucket, lambda_function_prefix + 'store_handler')
         stack_name = config['deployment_name'] or 'daily-journal-deployment'
-        notification_email = config['notification_email'] if 'notification_email' in config else None
-        notification_sms = config['notification_sms'] if 'notification_sms' in config else None
+        try:
+            notification_email = config['notification_email']
+        except KeyError:
+            notification_email = None
+        try:
+            notification_sms = config['notification_sms']
+        except KeyError:
+            notification_sms = None
+
         cloudformation_client = api_session.client('cloudformation')
         deploy_cloud_formation(api_gateway_identifier=config['api_gateway_identifier'],
                                stack_name=stack_name,
