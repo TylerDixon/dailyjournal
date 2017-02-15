@@ -13,6 +13,7 @@ import inquirer
 
 
 def get_config(config_location):
+    """Attempt to open config at location, and offer to write any necessary default properties to that config."""
     default_config = {
         'deployment_name': 'dj-deployment',
         'lambda_function_prefix': 'dj_',
@@ -24,6 +25,7 @@ def get_config(config_location):
         raw_config = open(config_location, 'r+')
         try:
             config = json.load(raw_config)
+            # Offer to fill in any necessary config keys with defaults
             if not all (k in config for k in default_config.keys()):
                 should_create_config_question = inquirer.Confirm('write_remaining_properties',
                               message='The supplied config doesn\'t have all of the necessary properties. Can I write the rest of them?'.format(config_location)
@@ -45,7 +47,6 @@ def get_config(config_location):
                     except IOError as write_config_err:
                         print 'Failed to write config due to {}. Aborting'.format(write_config_err)
                         return None
-
         except ValueError as parse_error:
             print 'The supplied config at {} isn\'t valid JSON, failed with error: {}'.format(config_location,
                                                                                               parse_error)
@@ -55,8 +56,7 @@ def get_config(config_location):
         finally:
             raw_config.close()
 
-
-
+    # If we fail to find the config file, offer to create one using the default
     except IOError:
         should_create_config_question = inquirer.Confirm('create_default',
                       message='Do you want me to create a default configuration for you at {}?'.format(config_location)
@@ -100,7 +100,6 @@ def get_config(config_location):
     return config
 
 def deploy_stack(config, debug_npm):
-    # TODO: Move to using configuration/schema validation library?
     api_session = boto3.Session(aws_access_key_id=config['access_key_id'], aws_secret_access_key=config['secret_access_key'],
                                 region_name=config['region'])
 
@@ -217,7 +216,6 @@ def deploy_cloud_formation(api_gateway_identifier, stack_name, cloudformation_cl
         print err
     print 'Stack request complete!'
 
-
 def upload_journal_views(apigateway_client, entries_bucket, api_gateway_identifier, region, debug_view_build):
     all_apis = apigateway_client.get_rest_apis(
         limit=500
@@ -254,9 +252,8 @@ def upload_file(settings):
     client = boto3.client('s3')
     try:
         content_type = 'text/html' if os.path.splitext(settings['key'])[1] == '.html' else 'application/octet-stream'
-        # TODO: Remove public read on the views
         client.upload_file(settings['file_path'], settings['bucket'], settings['key'],
-                           ExtraArgs={'ContentType': content_type, 'ACL': 'public-read'})
+                           ExtraArgs={'ContentType': content_type})
     except botocore.exceptions.ClientError as upload_err:
         print 'Failed to upload file {} to bucket {} under key {} because of {}'.format(settings['bucket'],
                                                                                         settings['file_path'],
