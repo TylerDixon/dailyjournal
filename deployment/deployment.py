@@ -1,6 +1,7 @@
 import boto3
 import botocore
 import os
+import random
 from .utils import archive_function
 import json
 import uuid
@@ -8,35 +9,102 @@ import tempfile
 import shutil
 import subprocess
 from multiprocessing import Pool
+import inquirer
 
 
-def deploy_stack(config, debug_npm):
-    # TODO: Move to using configuration/schema validation library?
+def get_config(config_location):
+    default_config = {
+        'deployment_name': 'dj-deployment',
+        'lambda_function_prefix': 'dj_',
+        'entries_bucket_name': 'dj-2017-' + str(random.randrange(2**24)),
+        'api_gateway_identifier': 'dj_2017'
+    }
+
     try:
-        access_key_id = config['aws_access_key_id']
+        raw_config = open(config_location, 'r+')
+        try:
+            config = json.load(raw_config)
+            if not all (k in config for k in default_config.keys()):
+                should_create_config_question = inquirer.Confirm('write_remaining_properties',
+                              message='The supplied config doesn\'t have all of the necessary properties. Can I write the rest of them?'.format(config_location)
+                              )
+                answers = inquirer.prompt([should_create_config_question])
+                if not answers['write_remaining_properties']:
+                    print 'Please create a configuration file with all necessary properties. Check the docs for more info!'
+                    return None
+                else:
+                    for key in default_config:
+                        try:
+                            config[key] = config[key]
+                        except KeyError:
+                            config[key] = default_config[key]
+                    try:
+                        raw_config.seek(0)
+                        raw_config.write(json.dumps(config))
+                        raw_config.truncate()
+                    except IOError as write_config_err:
+                        print 'Failed to write config due to {}. Aborting'.format(write_config_err)
+                        return None
+
+        except ValueError as parse_error:
+            print 'The supplied config at {} isn\'t valid JSON, failed with error: {}'.format(config_location,
+                                                                                              parse_error)
+            print 'Please supply a valid config.'
+            return None
+
+        finally:
+            raw_config.close()
+
+
+
+    except IOError:
+        should_create_config_question = inquirer.Confirm('create_default',
+                      message='Do you want me to create a default configuration for you at {}?'.format(config_location)
+                      )
+        answers = inquirer.prompt([should_create_config_question])
+        if not answers['create_default']:
+            print 'Please create a configuration file and call this with `python dailyjournal.py --config=path/to/config`'
+            return None
+        else:
+            config = default_config
+            try:
+                config_file = open(config_location, 'w')
+                config_file.write(json.dumps(config))
+                config_file.close()
+            except IOError as write_default_config_error:
+                print 'Failed to write default config at {} due to {}'.format(config_location, write_default_config_error)
+
+
+    try:
+        config['access_key_id'] = config['aws_access_key_id']
     except KeyError:
-        access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-    if access_key_id == None:
+        config['access_key_id'] = os.environ.get('AWS_ACCESS_KEY_ID')
+    if config['access_key_id'] == None:
         print 'No access key id found in config/environment variable, will be defaulting to what you find here: http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials'
 
     try:
-     secret_access_key = config['aws_secret_access_key']
+        config['secret_access_key'] = config['aws_secret_access_key']
     except KeyError:
-        os.environ.get('AWS_SECRET_ACCESS_KEY')
-    if secret_access_key == None:
+        config['secret_access_key'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    if config['secret_access_key'] == None:
         print 'No secret access key found in config/environment variable, will be defaulting to what you find here: http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials'
+
+
     try:
-        region = config['aws_region']
+        config['region'] = config['aws_region']
     except KeyError:
-        os.environ.get('AWS_REGION')
-    if region == None:
+        config['region'] = os.environ.get('AWS_REGION')
+    if config['region'] == None:
         print 'No region found in config/environment variable, will be defaulting to what you find here: http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials'
 
-    api_session = boto3.Session(aws_access_key_id=access_key_id, aws_secret_access_key=secret_access_key,
-                                region_name=region)
-    if region == None:
-        region = api_session.region_name
+    return config
 
+def deploy_stack(config, debug_npm):
+    # TODO: Move to using configuration/schema validation library?
+    api_session = boto3.Session(aws_access_key_id=config['access_key_id'], aws_secret_access_key=config['secret_access_key'],
+                                region_name=config['region'])
+
+    region = api_session.region_name
 
     # Create a temporary bucket for uploading zipped lambda functions for deployment
     entries_bucket_name = config['entries_bucket_name']
@@ -47,11 +115,7 @@ def deploy_stack(config, debug_npm):
     # Surround operations with a try, so buckets can always be cleaned up after the fact.
     try:
         print 'Uploading functions'
-        try:
-            lambda_function_prefix = config['lambda_function_prefix']
-        except KeyError:
-            lambda_function_prefix = 'daily_journal_'
-        upload_lambda_functions(deployment_bucket, lambda_function_prefix + 'store_handler')
+        upload_lambda_functions(deployment_bucket, 'store_handler')
         stack_name = config['deployment_name'] or 'daily-journal-deployment'
         try:
             notification_email = config['notification_email']
@@ -62,6 +126,10 @@ def deploy_stack(config, debug_npm):
         except KeyError:
             notification_sms = None
 
+        try:
+            lambda_function_prefix = config['lambda_function_prefix']
+        except KeyError:
+            lambda_function_prefix = 'daily_journal_'
         cloudformation_client = api_session.client('cloudformation')
         deploy_cloud_formation(api_gateway_identifier=config['api_gateway_identifier'],
                                stack_name=stack_name,
@@ -70,7 +138,8 @@ def deploy_stack(config, debug_npm):
                                entries_bucket_name=entries_bucket_name,
                                region=region,
                                notification_email=notification_email,
-                               notification_sms=notification_sms)
+                               notification_sms=notification_sms,
+                               lambda_prefix=lambda_function_prefix)
     finally:
         print 'Deleting s3 objects'
         deployment_bucket.delete_objects(Delete={
@@ -100,7 +169,7 @@ def upload_lambda_functions(bucket, function_name):
 
 
 def deploy_cloud_formation(api_gateway_identifier, stack_name, cloudformation_client, deployment_bucket_name,
-                           entries_bucket_name, region, notification_email, notification_sms):
+                           entries_bucket_name, region, notification_email, notification_sms, lambda_prefix):
     """Deploy the cloudformation stack (create a new one if it doesn't exist, update the old one if it does)"""
     should_update = True
     stack_waiter = 'stack_update_complete'
@@ -115,6 +184,7 @@ def deploy_cloud_formation(api_gateway_identifier, stack_name, cloudformation_cl
         cloud_formation_settings = json.load(f)
         cf_resources = cloud_formation_settings['Resources']
         cf_resources['StoreLambda']['Properties']['Code']['S3Bucket'] = deployment_bucket_name
+        cf_resources['StoreLambda']['Properties']['FunctionName'] = lambda_prefix + 'store_handler'
         cf_resources['DjRestApi']['Properties']['Name'] = api_gateway_identifier
         cf_resources['EntryBuckets']['Properties']['BucketName'] = entries_bucket_name
         # TODO: Allow custom message from configuration

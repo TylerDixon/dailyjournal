@@ -47,7 +47,7 @@
           "S3Key": "store_handler.zip"
         },
         "Description": "Function generated to store daily journal entries",
-        "FunctionName": "dj_store_handler",
+        "FunctionName": "store_handler",
         "Handler": "store_handler.handler",
         "MemorySize": 128,
         "Runtime": "python2.7",
