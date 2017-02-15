@@ -1,0 +1,243 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "DjRestApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "dj_cf"
+      }
+    },
+    "DjDeployment": {
+      "Type" : "AWS::ApiGateway::Deployment",
+      "Properties" : {
+        "RestApiId" : {
+          "Ref": "DjRestApi"
+        },
+        "StageName" : "dev"
+      },
+      "DependsOn": [
+        "StoreEntryMethod",
+        "DjRestApi"
+      ]
+    },
+    "EntriesResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "DjRestApi"
+        },
+        "ParentId": {
+          "Fn::GetAtt": [
+            "DjRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "entries"
+      },
+      "DependsOn": [
+        "DjRestApi",
+        "StoreLambda"
+      ]
+    },
+    "StoreLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "dailyjournal-tdixon",
+          "S3Key": "store_handler.zip"
+        },
+        "Description": "Function generated to store daily journal entries",
+        "FunctionName": "store_handler",
+        "Handler": "store_handler.handler",
+        "MemorySize": 128,
+        "Runtime": "python2.7",
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaRole",
+            "Arn"
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "S3_BUCKET": {
+              "Ref": "EntryBuckets"
+            }
+          }
+        }
+      },
+      "DependsOn": [
+        "EntryBuckets",
+        "LambdaRole"
+      ]
+    },
+    "LambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "dj_cf_role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:GetObject",
+                    "s3:DeleteObject"
+                  ],
+                  "Resource": [
+                    "arn:aws:s3:::dj-placeholder/entries/*"
+                  ]
+                }
+              ]
+            },
+            "PolicyName": "dj_cf"
+          }
+        ]
+      },
+      "DependsOn": [
+        "EntryBuckets"
+      ]
+    },
+    "EntryBuckets": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "PublicRead",
+        "WebsiteConfiguration": {
+          "IndexDocument": "index.html"
+        }
+      }
+    },
+    "StoreEntryMethod": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "DjRestApi"
+        },
+        "HttpMethod": "POST",
+        "AuthorizationType": "None",
+        "ResourceId": {
+          "Ref": "EntriesResource"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "StoreLambda",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "DependsOn": [
+        "EntriesResource",
+        "StoreLambda"
+      ]
+    },
+    "OptionsMethod": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "RestApiId": {
+          "Ref": "DjRestApi"
+        },
+        "ResourceId": {
+          "Ref": "EntriesResource"
+        },
+        "HttpMethod": "OPTIONS",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "StatusCode": 200,
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Methods": "'POST,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_MATCH",
+          "RequestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "StatusCode": 200,
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": false,
+              "method.response.header.Access-Control-Allow-Methods": false,
+              "method.response.header.Access-Control-Allow-Origin": false
+            }
+          }
+        ]
+      }
+    },
+    "ReminderSNS": {
+      "Type" : "AWS::SNS::Topic",
+      "Properties" : {
+        "DisplayName" : "Daily Journal Reminder SNS",
+        "Subscription" : [],
+        "TopicName" : "DJReminderSNS"
+      }
+    },
+    "NotificationRule": {
+      "Type" : "AWS::Events::Rule",
+      "Properties" : {
+        "Description" : "Reminder Event for Daily Journal",
+        "Name" : "DJReminderRule",
+        "ScheduleExpression" : "cron(54 2 * * ? *)",
+        "Targets" : [
+          {
+            "Arn": { "Ref": "ReminderSNS" },
+            "Id": "DJReminderSNS"
+          }
+        ]
+      }
+    }
+  }
+}

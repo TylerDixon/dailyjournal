@@ -1,12 +1,15 @@
 import React, {Component} from 'react';
 import './styles/css/app.css';
-import request from 'es6-request';
+import request from 'request-promise';
 import JournalForm from './components/JournalForm';
-const API_GATEWAY_URL = 'placeholderfornow!';
+const API_GATEWAY_URL = process.env.REACT_APP_GATEWAY_URL || 'Gateway URL not properly set.';
 
 class App extends Component {
     submit(data) {
-        request.post(API_GATEWAY_URL)
+        request.post({
+                uri: API_GATEWAY_URL,
+                json: data
+            })
             .json(data)
             .then(res => {
                 console.log(res);

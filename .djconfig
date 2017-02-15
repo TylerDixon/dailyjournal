@@ -1,0 +1,7 @@
+{
+  "deployment_name": "daily-journal-deployment",
+  "lambda_function_prefix": "daily_journal",
+  "entries_bucket_name": "dj-2017",
+  "api_gateway_identifier": "dj_2017",
+  "notification_email": "tylerd1242@gmail.com"
+}
