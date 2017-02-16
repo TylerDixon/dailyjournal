@@ -1,10 +1,11 @@
 # Daily Journal
 ![Scrubs Unicorn](/resources/horse_with_a_sword.jpg?raw=true)
 > Kelso: Write that down in your little unicorn book.
+
 > JD: Uh, actually sir, it's a horse with a sword on his head.
 
 ### Purpose
-Writing thoughts and and goals on a regular basis is healthy for the brain! This helps (or will help) you do that (soon™)
+Writing thoughts and and goals on a regular basis is healthy for the brain! This helps you do that.
 
 ### Running
 * Create a virtual environment at `venv`
