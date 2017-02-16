@@ -1,0 +1,15 @@
+{
+  "Type" : "AWS::S3::BucketPolicy",
+  "Properties" : {
+    "Bucket" : {"Ref" : "EntriesBucket"},
+    "PolicyDocument": {
+      "Statement":[{
+        "Action":["s3:GetObject"],
+        "Effect":"Allow",
+        "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "EntriesBucket" } , "/*" ]]},
+        "Principal":"*",
+        "Condition":{}
+      }]
+    }
+  }
+}

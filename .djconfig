@@ -1,7 +1,9 @@
 {
   "deployment_name": "daily-journal-deployment",
-  "lambda_function_prefix": "daily_journal",
-  "entries_bucket_name": "dj-2017",
+  "lambda_function_prefix": "daily_journal_",
+  "entries_bucket_name": "my-dj-2017",
   "api_gateway_identifier": "dj_2017",
-  "notification_email": "tylerd1242@gmail.com"
+  "notification_email": "tylerd1242@gmail.com",
+  "views_authentication": "myip",
+  "reminder_time": "cron(0 2 * * ? *)"
 }
