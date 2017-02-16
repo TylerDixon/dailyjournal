@@ -2,7 +2,7 @@ import boto3
 import botocore
 import os
 import random
-from .utils import archive_function
+from .utils import archive_function, get_ip
 import json
 import uuid
 import tempfile
@@ -17,7 +17,7 @@ def get_config(config_location):
     default_config = {
         'deployment_name': 'dj-deployment',
         'lambda_function_prefix': 'dj_',
-        'entries_bucket_name': 'dj-2017-' + str(random.randrange(2**24)),
+        'entries_bucket_name': 'dj-2017-' + str(random.randrange(2 ** 24)),
         'api_gateway_identifier': 'dj_2017'
     }
 
@@ -26,10 +26,11 @@ def get_config(config_location):
         try:
             config = json.load(raw_config)
             # Offer to fill in any necessary config keys with defaults
-            if not all (k in config for k in default_config.keys()):
+            if not all(k in config for k in default_config.keys()):
                 should_create_config_question = inquirer.Confirm('write_remaining_properties',
-                              message='The supplied config doesn\'t have all of the necessary properties. Can I write the rest of them?'.format(config_location)
-                              )
+                                                                 message='The supplied config doesn\'t have all of the necessary properties. Can I write the rest of them?'.format(
+                                                                     config_location)
+                                                                 )
                 answers = inquirer.prompt([should_create_config_question])
                 if not answers['write_remaining_properties']:
                     print 'Please create a configuration file with all necessary properties. Check the docs for more info!'
@@ -59,8 +60,9 @@ def get_config(config_location):
     # If we fail to find the config file, offer to create one using the default
     except IOError:
         should_create_config_question = inquirer.Confirm('create_default',
-                      message='Do you want me to create a default configuration for you at {}?'.format(config_location)
-                      )
+                                                         message='Do you want me to create a default configuration for you at {}?'.format(
+                                                             config_location)
+                                                         )
         answers = inquirer.prompt([should_create_config_question])
         if not answers['create_default']:
             print 'Please create a configuration file and call this with `python dailyjournal.py --config=path/to/config`'
@@ -72,8 +74,8 @@ def get_config(config_location):
                 config_file.write(json.dumps(config))
                 config_file.close()
             except IOError as write_default_config_error:
-                print 'Failed to write default config at {} due to {}'.format(config_location, write_default_config_error)
-
+                print 'Failed to write default config at {} due to {}'.format(config_location,
+                                                                              write_default_config_error)
 
     try:
         config['access_key_id'] = config['aws_access_key_id']
@@ -89,7 +91,6 @@ def get_config(config_location):
     if config['secret_access_key'] == None:
         print 'No secret access key found in config/environment variable, will be defaulting to what you find here: http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials'
 
-
     try:
         config['region'] = config['aws_region']
     except KeyError:
@@ -99,8 +100,10 @@ def get_config(config_location):
 
     return config
 
+
 def deploy_stack(config, debug_npm):
-    api_session = boto3.Session(aws_access_key_id=config['access_key_id'], aws_secret_access_key=config['secret_access_key'],
+    api_session = boto3.Session(aws_access_key_id=config['access_key_id'],
+                                aws_secret_access_key=config['secret_access_key'],
                                 region_name=config['region'])
 
     region = api_session.region_name
@@ -115,30 +118,15 @@ def deploy_stack(config, debug_npm):
     try:
         print 'Uploading functions'
         upload_lambda_functions(deployment_bucket, 'store_handler')
-        stack_name = config['deployment_name'] or 'daily-journal-deployment'
-        try:
-            notification_email = config['notification_email']
-        except KeyError:
-            notification_email = None
-        try:
-            notification_sms = config['notification_sms']
-        except KeyError:
-            notification_sms = None
+        cloud_formation_settings = get_cloud_formation_settings(config=config,
+                                     deployment_bucket_name=deployment_bucket.name,
+                                     entries_bucket_name=entries_bucket_name)
 
-        try:
-            lambda_function_prefix = config['lambda_function_prefix']
-        except KeyError:
-            lambda_function_prefix = 'daily_journal_'
+        stack_name = config['deployment_name'] or 'daily-journal-deployment'
         cloudformation_client = api_session.client('cloudformation')
-        deploy_cloud_formation(api_gateway_identifier=config['api_gateway_identifier'],
+        deploy_cloud_formation(cloudformation_client=cloudformation_client,
                                stack_name=stack_name,
-                               cloudformation_client=cloudformation_client,
-                               deployment_bucket_name=deployment_bucket.name,
-                               entries_bucket_name=entries_bucket_name,
-                               region=region,
-                               notification_email=notification_email,
-                               notification_sms=notification_sms,
-                               lambda_prefix=lambda_function_prefix)
+                               cloud_formation_settings=cloud_formation_settings)
     finally:
         print 'Deleting s3 objects'
         deployment_bucket.delete_objects(Delete={
@@ -157,6 +145,7 @@ def deploy_stack(config, debug_npm):
                          api_gateway_identifier=config['api_gateway_identifier'],
                          region=region,
                          debug_view_build=debug_npm)
+    print 'Make your first entry: http://{}.s3-website-{}.amazonaws.com/'.format(entries_bucket_name, region)
 
 
 def upload_lambda_functions(bucket, function_name):
@@ -167,8 +156,69 @@ def upload_lambda_functions(bucket, function_name):
     shutil.rmtree(temp_zip_dir)
 
 
-def deploy_cloud_formation(api_gateway_identifier, stack_name, cloudformation_client, deployment_bucket_name,
-                           entries_bucket_name, region, notification_email, notification_sms, lambda_prefix):
+def get_cloud_formation_settings(config, deployment_bucket_name, entries_bucket_name):
+    try:
+        notification_email = config['notification_email']
+    except KeyError:
+        notification_email = None
+    try:
+        notification_sms = config['notification_sms']
+    except KeyError:
+        notification_sms = None
+
+    try:
+        lambda_function_prefix = config['lambda_function_prefix']
+    except KeyError:
+        lambda_function_prefix = 'daily_journal_'
+    try:
+        reminder_time = config['reminder_time']
+    except KeyError:
+        reminder_time = None
+
+    print 'Loading configuration'
+    with open(os.path.join(os.getcwd(), os.path.dirname(__file__), 'blank_bucket_policy_doc.json')) as blank_policy_doc:
+        with open(os.path.join(os.getcwd(), os.path.dirname(__file__), 'cloud_formation.json')) as cloud_formation_file:
+            policy_doc = json.load(blank_policy_doc)
+            use_policy_doc = True
+            try:
+                if config['views_authentication'] == 'myip':
+                    this_ip = get_ip()
+                    if this_ip:
+                        policy_doc['Properties']['PolicyDocument']['Statement'][0]['Condition']['IpAddress'] = {'aws:SourceIp': this_ip}
+                    else:
+                        use_policy_doc = False
+                if config['views_authentication'] == 'public':
+                    policy_doc['Properties']['PolicyDocument']['Statement'][0].pop('Condition')
+            except KeyError:
+                use_policy_doc = False
+                print 'No'
+            cloud_formation_settings = json.load(cloud_formation_file)
+            cf_resources = cloud_formation_settings['Resources']
+            if(use_policy_doc):
+                cf_resources['BucketPolicy'] = policy_doc
+            cf_resources['LambdaRole']['Properties']['Policies'][0]['PolicyDocument']['Statement'][1]['Resource'][0] = 'arn:aws:s3:::{}/entries/*'.format(entries_bucket_name)
+            cf_resources['StoreLambda']['Properties']['Code']['S3Bucket'] = deployment_bucket_name
+            cf_resources['StoreLambda']['Properties']['FunctionName'] = lambda_function_prefix + 'store_handler'
+            cf_resources['DjRestApi']['Properties']['Name'] = config['api_gateway_identifier']
+            cf_resources['EntriesBucket']['Properties']['BucketName'] = entries_bucket_name
+            cf_resources['NotificationRule']['Properties']['ScheduleExpression'] = reminder_time or \
+                                                                                   cf_resources['NotificationRule'][
+                                                                                       'Properties']['ScheduleExpression']
+            # TODO: Allow custom message from configuration
+            cf_resources['NotificationRule']['Properties']['Targets'][0][
+                'Input'] = '"Don\'t forget today\'s entry! http://{}.s3-website-{}.amazonaws.com/"'.format(
+                entries_bucket_name, config['region'])
+            if notification_email:
+                cf_resources['ReminderSNS']['Properties']['Subscription'].append(
+                    {'Endpoint': notification_email, 'Protocol': 'email'})
+            if notification_sms:
+                cf_resources['ReminderSNS']['Properties']['Subscription'].append(
+                    {'Endpoint': notification_sms, 'Protocol': 'sms'})
+
+            return cloud_formation_settings
+
+
+def deploy_cloud_formation(stack_name, cloudformation_client, cloud_formation_settings):
     """Deploy the cloudformation stack (create a new one if it doesn't exist, update the old one if it does)"""
     should_update = True
     stack_waiter = 'stack_update_complete'
@@ -178,43 +228,25 @@ def deploy_cloud_formation(api_gateway_identifier, stack_name, cloudformation_cl
         should_update = False
         stack_waiter = 'stack_create_complete'
 
-    print 'Loading configuration'
-    with open(os.path.join(os.getcwd(), os.path.dirname(__file__), 'cloud_formation.json')) as f:
-        cloud_formation_settings = json.load(f)
-        cf_resources = cloud_formation_settings['Resources']
-        cf_resources['StoreLambda']['Properties']['Code']['S3Bucket'] = deployment_bucket_name
-        cf_resources['StoreLambda']['Properties']['FunctionName'] = lambda_prefix + 'store_handler'
-        cf_resources['DjRestApi']['Properties']['Name'] = api_gateway_identifier
-        cf_resources['EntryBuckets']['Properties']['BucketName'] = entries_bucket_name
-        # TODO: Allow custom message from configuration
-        cf_resources['NotificationRule']['Properties']['Targets'][0][
-            'Input'] = '"Don\'t forget today\'s entry! http://{}.s3-website-{}.amazonaws.com/"'.format(
-            entries_bucket_name, region)
-        if notification_email:
-            cf_resources['ReminderSNS']['Properties']['Subscription'].append(
-                {'Endpoint': notification_email, 'Protocol': 'email'})
-        if notification_sms:
-            cf_resources['ReminderSNS']['Properties']['Subscription'].append(
-                {'Endpoint': notification_sms, 'Protocol': 'sms'})
-
-        if should_update:
-            print 'Updating stack'
-            cloudformation_client.update_stack(StackName=stack_name,
-                                               Capabilities=['CAPABILITY_NAMED_IAM'],
-                                               TemplateBody=json.dumps(cloud_formation_settings))
-        else:
-            print 'Creating stack'
-            cloudformation_client.create_stack(StackName=stack_name,
-                                               Capabilities=['CAPABILITY_NAMED_IAM'],
-                                               TemplateBody=json.dumps(cloud_formation_settings))
+    if should_update:
+        print 'Updating stack'
+        cloudformation_client.update_stack(StackName=stack_name,
+                                           Capabilities=['CAPABILITY_NAMED_IAM'],
+                                           TemplateBody=json.dumps(cloud_formation_settings))
+    else:
+        print 'Creating stack'
+        cloudformation_client.create_stack(StackName=stack_name,
+                                           Capabilities=['CAPABILITY_NAMED_IAM'],
+                                           TemplateBody=json.dumps(cloud_formation_settings))
     waiter = cloudformation_client.get_waiter(stack_waiter)
-    print 'Waiting for stack {0} to be {1}..'.format(stack_name, 'update' if should_update else 'create')
+    print 'Waiting for stack {0} to be {1}...'.format(stack_name, 'updated' if should_update else 'created')
     try:
         waiter.wait(StackName=stack_name)
     except botocore.exceptions.ClientError as err:
         print 'Failed to deploy stack {}'.format(stack_name)
         print err
     print 'Stack request complete!'
+
 
 def upload_journal_views(apigateway_client, entries_bucket, api_gateway_identifier, region, debug_view_build):
     all_apis = apigateway_client.get_rest_apis(

@@ -1,5 +1,6 @@
 import zipfile
 import os
+import httplib
 
 def archive_function(zip_dir, func_name):
     """Archives a given function, and returns the """
@@ -14,3 +15,16 @@ def archive_function(zip_dir, func_name):
     function_zip.close()
 
     return archive_loc
+
+def get_ip():
+    ip_conn = httplib.HTTPConnection('checkip.amazonaws.com')
+    try:
+        ip_conn.request("GET", "/")
+        res = ip_conn.getresponse()
+        if res.status == 200:
+            res = res.read()
+            return res[:-1]
+        else:
+            return None
+    finally:
+        ip_conn.close()
