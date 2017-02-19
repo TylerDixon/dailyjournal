@@ -7,7 +7,7 @@ class TextArea extends Component {
                       name={this.props.elementConfig.id} 
                       id={this.props.elementConfig.id}
                       cols={this.props.elementConfig.cols || 30}
-                      rows={this.props.elementConfig.rows || 10} ></textarea>
+                      rows={this.props.elementConfig.rows || 5} ></textarea>
         );
     }
 }

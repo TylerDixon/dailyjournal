@@ -70,10 +70,12 @@ class JournalForm extends Component {
                                             onChange={this.handleElementChange.bind(this)}
                                             elementConfig={formElement}></Choices>;
                     break;
+                default:
+                    console.log(`No such form element type ${formElement.type}. Must be one of "textarea", "text", "number", "range", "checkbox", or "radio"`)
             }
 
             return <div className="form-element-container">
-                    <h2>{formElement.title}</h2>
+                    <h1>{formElement.title}</h1>
                     {elementToAdd}
                 </div>
         });
