@@ -1,3 +1,50 @@
 body {
+    .form-element-container:first-child {
+        h1 {
+            margin-top: 0;
+        }
+    }
+    h1 {
+        font-size: 1.5em;
+    }
     margin: 0;
+    padding: 10px;
+    background: #eceae3;
+    color: #333;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    max-width: 400px;
+}
+
+input, textarea {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 0;
+    border-bottom: 1px solid #a2a099;
+}
+
+input, textarea, .input-container{
+    margin-left: 15px;
+}
+
+input[type="text"], textarea {
+    padding: 5px;
+    width: 100%;
+}
+
+input[type="submit"] {
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin-top: 30px;
+    font-size: 1em;
+    text-transform: uppercase;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.input-container {
+    display: block;
+    margin-bottom: 5px;
+    input[type="checkbox"], input[type="radio"] {
+        margin-right: 10px;
+    }
 }
