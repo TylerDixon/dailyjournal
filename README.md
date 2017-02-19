@@ -5,7 +5,10 @@
 > JD: Uh, actually sir, it's a horse with a sword on his head.
 
 ### Purpose
-Writing thoughts and and goals on a regular basis is healthy for the brain! This helps you do that.
+Journaling your thoughts at the end of the day has shown to be beneficial [[1]](https://www.urmc.rochester.edu/encyclopedia/content.aspx?ContentTypeID=1&ContentID=4552)[[2]](https://psychcentral.com/lib/the-health-benefits-of-journaling/). This helps you do that!
+
+### What is it?
+Daily Journal is a tool that you can use to deploy a cheap infrastructure on AWS which reminds you to write a daily entry via a configured form, and stores all entries. 
 
 ### Running
 * Create a virtual environment at `venv`
